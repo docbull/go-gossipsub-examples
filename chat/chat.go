@@ -1,16 +1,19 @@
 package main
 
 import (
+	"bufio"
 	"context"
 	"encoding/json"
 	"fmt"
-	"time"
+	"os"
 
 	"github.com/libp2p/go-libp2p-core/peer"
 	pubsub "github.com/libp2p/go-libp2p-pubsub"
 )
 
 const ChatRoomBufSize = 128
+
+const GreenMsg = "\033[32m"
 
 type Chat struct {
 	Messages chan *ChatMessage
@@ -44,7 +47,7 @@ func JoinChat(ctx context.Context, ps *pubsub.PubSub, selfID peer.ID, nickname s
 		return nil, err
 	}
 
-	cr := &Chat{
+	chat := &Chat{
 		Messages: make(chan *ChatMessage, ChatRoomBufSize),
 		ctx:      ctx,
 		ps:       ps,
@@ -55,18 +58,18 @@ func JoinChat(ctx context.Context, ps *pubsub.PubSub, selfID peer.ID, nickname s
 		roomName: roomName,
 	}
 
-	go cr.readLoop()
-	return cr, nil
+	go chat.readLoop()
+	return chat, nil
 }
 
-func (cr *Chat) readLoop() {
+func (chat *Chat) readLoop() {
 	for {
-		msg, err := cr.sub.Next(cr.ctx)
+		msg, err := chat.sub.Next(chat.ctx)
 		if err != nil {
-			close(cr.Messages)
+			close(chat.Messages)
 			return
 		}
-		if msg.ReceivedFrom == cr.self {
+		if msg.ReceivedFrom == chat.self {
 			continue
 		}
 		cm := new(ChatMessage)
@@ -74,41 +77,65 @@ func (cr *Chat) readLoop() {
 		if err != nil {
 			continue
 		}
-		cr.Messages <- cm
+		chat.Messages <- cm
 	}
 }
 
-func (cr *Chat) Run() error {
-	go cr.handleEvents()
+func (chat *Chat) Run() error {
+	go chat.handleEvents()
+
+	fmt.Println("--------------------------")
+	fmt.Println("Room:", chat.roomName)
+	fmt.Println("Your name:", chat.nick)
+	fmt.Println("--------------------------")
+
+	for {
+		var msg string
+		//fmt.Print(chat.nick, "> ")
+		scanner := bufio.NewScanner(os.Stdin)
+		scanner.Scan()
+		msg = scanner.Text()
+		if len(msg) == 0 {
+			continue
+		}
+		if msg == "/quit" {
+			// when you enter /quit into the chat, it closes chat app.
+			break
+		} else {
+			err := chat.Publish(msg)
+			if err != nil {
+				panic(err)
+			}
+		}
+	}
 
 	return nil
 }
 
-func (cr *Chat) Publish(message string) error {
+func (chat *Chat) Publish(message string) error {
 	m := ChatMessage{
 		Message:    message,
-		SenderID:   cr.self.Pretty(),
-		SenderNick: cr.nick,
+		SenderID:   chat.self.Pretty(),
+		SenderNick: chat.nick,
 	}
 	msgBytes, err := json.Marshal(m)
 	if err != nil {
 		return err
 	}
-	return cr.topic.Publish(cr.ctx, msgBytes)
+	return chat.topic.Publish(chat.ctx, msgBytes)
 }
 
-func (cr *Chat) handleEvents() {
+func (chat *Chat) handleEvents() {
 	for {
 		select {
-		case input := <-cr.inputCh:
-			err := cr.Publish(input)
+		case input := <-chat.inputCh:
+			err := chat.Publish(input)
 			if err != nil {
 				printErr("publish error: %s", err)
 			}
-		case m := <-cr.Messages:
-			prompt := withColor("green", fmt.Sprintf("<%s>:", cr.nick))
-			fmt.Println(prompt, m)
-		case <-cr.ctx.Done():
+		case m := <-chat.Messages:
+			fmt.Println(m.SenderNick, ":", m.Message)
+		case <-chat.ctx.Done():
 			return
 		}
 	}
@@ -116,9 +143,4 @@ func (cr *Chat) handleEvents() {
 
 func topicName(roomName string) string {
 	return "chat-room" + roomName
-}
-
-// withColor wraps a string with color tags for display in the messages text box.
-func withColor(color, msg string) string {
-	return fmt.Sprintf("[%s]%s[-]", color, msg)
 }

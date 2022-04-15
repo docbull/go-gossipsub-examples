@@ -44,6 +44,7 @@ func main() {
 		panic(err)
 	}
 
+	// nick is your nickname for this chat.
 	nick := *nickFlag
 	if len(nick) == 0 {
 		nick = defaultNick(host.ID())
@@ -51,21 +52,19 @@ func main() {
 
 	room := *roomFlag
 
-	cr, err := JoinChat(ctx, ps, host.ID(), nick, room)
+	chat, err := JoinChat(ctx, ps, host.ID(), nick, room)
 	if err != nil {
 		panic(err)
 	}
 
-	err = cr.Run()
+	err = chat.Run()
 	if err != nil {
 		panic(err)
 	}
 }
 
-func printErr(m string, args ...interface{}) {
-	fmt.Fprintf(os.Stderr, m, args...)
-}
-
+// defaultNick returns default nickname that you didn't set any
+// nickname when you start this chat example.
 func defaultNick(p peer.ID) string {
 	return fmt.Sprintf("%s-%s", os.Getenv("USER"), shortID(p))
 }
@@ -84,11 +83,7 @@ type discoveryNotifee struct {
 // the PubSub system will automatically start interacting with them if they also
 // support PubSub.
 func (n *discoveryNotifee) HandlePeerFound(pi peer.AddrInfo) {
-	fmt.Printf("discovered new peer %s\n", pi.ID.Pretty())
-	err := n.h.Connect(context.Background(), pi)
-	if err != nil {
-		fmt.Printf("error connecting to peer %s: %s\n", pi.ID.Pretty(), err)
-	}
+	_ = n.h.Connect(context.Background(), pi)
 }
 
 // setupDiscovery creates an mDNS discovery service and attaches it to the libp2p Host.
@@ -97,4 +92,9 @@ func setupDiscovery(h host.Host) error {
 	// setup mDNS discovery to find local peers
 	s := mdns.NewMdnsService(h, DiscoveryServiceTag, &discoveryNotifee{h: h})
 	return s.Start()
+}
+
+// printErr prints error comments.
+func printErr(m string, args ...interface{}) {
+	fmt.Fprintf(os.Stderr, m, args...)
 }
