@@ -2,7 +2,7 @@
 
 ## Examples
 
-- [Chat App] (#chat-app)
+- [Chat App](#chat-app)
 
 ## Chat App
 
@@ -14,7 +14,7 @@ Users can set own nickname by nick flag (--nickname=NICKNAME) and room name by r
 
 Run this app like this:
 
-```console
+```go
 go run . --nick=docbull --room=ChatApp
 ```
 
