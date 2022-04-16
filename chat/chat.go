@@ -13,8 +13,6 @@ import (
 
 const ChatRoomBufSize = 128
 
-const GreenMsg = "\033[32m"
-
 type Chat struct {
 	Messages chan *ChatMessage
 
