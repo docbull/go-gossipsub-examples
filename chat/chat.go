@@ -126,11 +126,6 @@ func (chat *Chat) Publish(message string) error {
 func (chat *Chat) handleEvents() {
 	for {
 		select {
-		case input := <-chat.inputCh:
-			err := chat.Publish(input)
-			if err != nil {
-				printErr("publish error: %s", err)
-			}
 		case m := <-chat.Messages:
 			fmt.Println(m.SenderNick, ":", m.Message)
 		case <-chat.ctx.Done():
