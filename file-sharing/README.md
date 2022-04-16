@@ -41,5 +41,5 @@ Output B:
 Network Group: FileSharing
 Your name: QmP...
 --------------------------
-QmS... send a file: text.txt
+QmS... sent a file: text.txt
 ```
