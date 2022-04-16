@@ -93,8 +93,3 @@ func setupDiscovery(h host.Host) error {
 	s := mdns.NewMdnsService(h, DiscoveryServiceTag, &discoveryNotifee{h: h})
 	return s.Start()
 }
-
-// printErr prints error comments.
-func printErr(m string, args ...interface{}) {
-	fmt.Fprintf(os.Stderr, m, args...)
-}

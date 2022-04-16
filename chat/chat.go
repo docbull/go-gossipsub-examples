@@ -24,8 +24,6 @@ type Chat struct {
 	roomName string
 	self     peer.ID
 	nick     string
-
-	inputCh chan string
 }
 
 type ChatMessage struct {
