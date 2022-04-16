@@ -77,6 +77,7 @@ go run . --network=FileSharing
 ```
 
 Now enter a name of file that you want to share.
+
 Output A:
 ```console
 --------------------------
