@@ -12,8 +12,10 @@ import (
 	pubsub "github.com/libp2p/go-libp2p-pubsub"
 )
 
-const ChatRoomBufSize = 128
+const BufSize = 128
 
+// File structure includes filename, file data, and 
+// sender's peer ID
 type File struct {
 	FileName   string
 	Data       []byte
@@ -32,6 +34,8 @@ type FileTransceiver struct {
 	peerID       peer.ID
 }
 
+// JoinNetwork let the peers join in the topic that was set using
+// network group name
 func JoinNetwork(ctx context.Context, ps *pubsub.PubSub, peerID peer.ID, ng string) (*FileTransceiver, error) {
 	topic, err := ps.Join(topicName(ng))
 	if err != nil {
@@ -44,7 +48,7 @@ func JoinNetwork(ctx context.Context, ps *pubsub.PubSub, peerID peer.ID, ng stri
 	}
 
 	ft := &FileTransceiver{
-		ReceivedFile: make(chan *File, ChatRoomBufSize),
+		ReceivedFile: make(chan *File, BufSize),
 		ctx:          ctx,
 		ps:           ps,
 		topic:        topic,
@@ -57,18 +61,21 @@ func JoinNetwork(ctx context.Context, ps *pubsub.PubSub, peerID peer.ID, ng stri
 	return ft, nil
 }
 
+// readLoop reading files as loop, and it unmarshalling received
+// data that marshalled as JSON format, and then it pushes the 
+// raw data into ReceivedFile channel
 func (ft *FileTransceiver) readLoop() {
 	for {
-		msg, err := ft.sub.Next(ft.ctx)
+		d, err := ft.sub.Next(ft.ctx)
 		if err != nil {
 			close(ft.ReceivedFile)
 			return
 		}
-		if msg.ReceivedFrom == ft.peerID {
+		if d.ReceivedFrom == ft.peerID {
 			continue
 		}
 		cm := new(File)
-		err = json.Unmarshal(msg.Data, cm)
+		err = json.Unmarshal(d.Data, cm)
 		if err != nil {
 			continue
 		}
@@ -76,6 +83,8 @@ func (ft *FileTransceiver) readLoop() {
 	}
 }
 
+// Run waiting users' command and listening file transmission from 
+// other peers
 func (ft *FileTransceiver) Run() error {
 	go ft.handleEvents()
 
@@ -111,6 +120,7 @@ func (ft *FileTransceiver) Run() error {
 	return nil
 }
 
+// PublishWithFileName publishes File structure into topic, i.e. network group
 func (ft *FileTransceiver) PublishWithFileName(fileName string, file []byte) error {
 	m := File{
 		FileName:   fileName,
@@ -124,6 +134,8 @@ func (ft *FileTransceiver) PublishWithFileName(fileName string, file []byte) err
 	return ft.topic.Publish(ft.ctx, fileBytes)
 }
 
+// handleEvents handles receiving events when you receive
+// a file from other peers
 func (ft *FileTransceiver) handleEvents() {
 	for {
 		select {
@@ -135,6 +147,8 @@ func (ft *FileTransceiver) handleEvents() {
 	}
 }
 
+// handleReceivedFile shows who sent the file and what is the file name, 
+// and store it into the directory that you run this example
 func (ft *FileTransceiver) handleReceivedFile(receivedFile *File) {
 	fmt.Println(receivedFile.SenderPeer, "sent a file:", receivedFile.FileName)
 	file, err := os.Create(receivedFile.FileName)
@@ -149,6 +163,10 @@ func (ft *FileTransceiver) handleReceivedFile(receivedFile *File) {
 	}
 }
 
-func topicName(roomName string) string {
-	return "Network Group" + roomName
+// topicName returns topic name that includes network group
+// name, if you want to set randomized topic name, you should
+// modify this function. e.g., using DES key value + network 
+// group name
+func topicName(ng string) string {
+	return "Network Group" + ng
 }

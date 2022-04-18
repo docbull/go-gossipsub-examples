@@ -15,16 +15,19 @@ import (
 const DiscoveryServiceTag = "gossipsub-file-transceiver"
 
 func main() {
+	// networkFlag for setting name of creating/joining network group
 	networkFlag := flag.String("network", "test-network", "name of network group")
 	flag.Parse()
 
 	ctx := context.Background()
 
+	// open libp2p host on mDNS communication
 	host, err := libp2p.New(libp2p.ListenAddrStrings("/ip4/0.0.0.0/tcp/0"))
 	if err != nil {
 		panic(err)
 	}
 
+	// using GossipSub for disseminating files into network group
 	ps, err := pubsub.NewGossipSub(ctx, host)
 	if err != nil {
 		panic(err)
@@ -41,6 +44,7 @@ func main() {
 
 	ng := *networkFlag
 
+	// joining network group that you configured
 	network, err := JoinNetwork(ctx, ps, host.ID(), ng)
 	if err != nil {
 		panic(err)
