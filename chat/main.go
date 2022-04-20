@@ -35,10 +35,6 @@ func main() {
 		panic(err)
 	}
 
-	if err := setupDiscovery(host); err != nil {
-		panic(err)
-	}
-
 	// setup local mDNS discovery
 	if err := setupDiscovery(host); err != nil {
 		panic(err)
