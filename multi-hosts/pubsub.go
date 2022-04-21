@@ -12,7 +12,7 @@ import (
 
 var handles = map[string]string{}
 
-const pubsubTopic = "/libp2p/example/chat/1.0.0"
+const pubsubTopic = "libp2p_gossip_multihost_chat"
 
 func pubsubMessageHandler(id peer.ID, msg *SendMessage) {
 	handle, ok := handles[id.String()]

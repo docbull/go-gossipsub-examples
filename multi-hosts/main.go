@@ -34,8 +34,10 @@ func (m *mdnsNotifee) HandlePeerFound(pi peer.AddrInfo) {
 }
 
 func main() {
-	modeFlag := flag.String("bootstrap", "", "bootstrap peer")
-
+	// modeFlag indicates running peer's mode
+	modeFlag := flag.String("mode", "", "running peer mode")
+	// bootFlag indicates bootstrap peer's multiaddrs
+	bootFlag := flag.String("bootstrap", "", "calling bootstrap peer")
 	flag.Parse()
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -55,6 +57,9 @@ func main() {
 
 	var port string
 	mode := *modeFlag
+
+	// Bootstrap peers open 4001 port for listening, and the
+	// other common nodes open their available randomized port
 	if strings.Contains(mode, "bootstrap") {
 		port = "4001"
 	} else {
@@ -88,11 +93,13 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+
 	topic, err := ps.Join(pubsubTopic)
 	if err != nil {
 		panic(err)
 	}
 	defer topic.Close()
+	
 	sub, err := topic.Subscribe()
 	if err != nil {
 		panic(err)
@@ -105,18 +112,21 @@ func main() {
 
 	peerID := string(host.ID().Pretty())
 	fmt.Println("Peer ID:", peerID)
-	// need to change multiaddrs after ran the bootstrap peer
-	targetAddr, err := multiaddr.NewMultiaddr("/ip4/203.247.240.228/tcp/4001/p2p/QmRQX5xnR9tucjJjyMbTZBJBczf4hgNvRLRrYB9es4Mx4g")
-	if err != nil {
-		panic(err)
-	}
 
-	targetInfo, err := peer.AddrInfoFromP2pAddr(targetAddr)
-	if err != nil {
-		panic(err)
-	}
+	if strings.Contains(mode, "bootstrap") {
+		fmt.Println("Copy and paste this multiaddrs for joining chat app in another peer:", host.Addrs()[0].String()+"/p2p/"+peerID)
+	} else {
+		bootstrap := *bootFlag
+		targetAddr, err := multiaddr.NewMultiaddr(bootstrap)
+		if err != nil {
+			panic(err)
+		}
+	
+		targetInfo, err := peer.AddrInfoFromP2pAddr(targetAddr)
+		if err != nil {
+			panic(err)
+		}
 
-	if !strings.Contains(mode, "bootstrap") {
 		err = host.Connect(ctx, *targetInfo)
 		if err != nil {
 			panic(err)
