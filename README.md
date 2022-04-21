@@ -8,6 +8,7 @@ Libp2p GossipSub-based examples for getting skilled using GossipSub. You can run
 
 - [Chat App](#chat-app)
 - [File Sharing](#file-sharing)
+- [Multi-host Chat App](#multi-host-chat-app)
 
 ## Chat App
 
@@ -15,7 +16,7 @@ GossipSub chatting application is based on [go-libp2p pubsub example](https://gi
 
 You can chat with another peers in the same LAN and topic (P2P network group) by running this simple chat app.
 
-Users can set own nickname by nick flag (--nickname=NICKNAME) and room name by room flag (--room=ROOMNAME). If you didn't set any names, your nickname would be $USER-RANDOM_TEXT and room name would be test by default.
+Users can set own nickname by nick flag `--nickname=NICKNAME` and room name by room flag `--room=ROOMNAME`. If you didn't set any names, your nickname would be $USER-RANDOM_TEXT and room name would be test by default.
 
 Run chat app like this:
 
@@ -29,7 +30,7 @@ And run another chat app user in a new terminal:
 go run . --nick=watson --room=ChatApp
 ```
 
-Enter any message in the terminal. The message would be sent to other peers using GossipSub. If you want to leave the chatting room, just enter /quit command.
+Enter any message in the terminal. The message would be sent to other peers using GossipSub. If you want to leave the chatting room, just enter `/quit` command.
 
 Output A:
 ```console
@@ -54,7 +55,7 @@ docbull : hi, there!
 
 File sharing example transfer a file that you entered in the terminal. A receiver prints who sent the file and stores on own directory.
 
-In this example, you don't need to setup your name, it only works by default. On the other hand, network group name would be set by network flag (--network==NETWORK_NAME).
+In this example, you don't need to setup your name, it only works by default. On the other hand, network group name would be set by network flag `--network==NETWORK_NAME`.
 
 Run file sharing example like this:
 
@@ -95,3 +96,53 @@ Your name: QmP...
 --------------------------
 QmS... sent a file: text.txt
 ```
+
+## Multi-host Chat App
+
+This multi-host chat app is based on [go-libp2p example](https://github.com/libp2p/go-libp2p/tree/master/examples/ipfs-camp-2019).
+
+The simple chat app example above is only working on the same subnet peers like an intranet. That means, the messages cannot go outside and inside neither.
+
+This example lets you experience running chat app that available outside of subnet.
+
+There are two setup flags for working peers
+- mode
+- bootstrap
+
+mode flag configures peer's role, bootstrap peer or common peer, using `--mode=bootstrap`. Default mode is common peer.
+
+bootstrap flag configures bootstrap peer for joining chat app. You can specify a bootstrap peer using `--bootstrap=/ip4/BOOTSTRAP_IP/tcp/4001/p2p/Qm...`.
+
+Run bootstrap peer like this:
+
+```go
+go run . --mode=bootstrap
+```
+
+Output:
+
+```console
+Listening on /ip4/BOOTSTRAP_IP/tcp/4001
+Listening on /ip4/127.0.0.1/tcp/4001
+Peer ID: QmS...
+Copy and paste this multiaddrs for joining chat app in another peer: /ip4/BOOTSTRAP_IP/tcp/4001/p2p/QmS...
+
+
+If you have bootstrap peer, lets run common peer to join in the chat:
+
+```go
+go run . --bootstrap=/ip4/BOOTSTRAP_IP/tcp/4001/p2p/QmS...
+```
+
+Output:
+
+```console
+Listening on /ip4/IP_ADDRESS/tcp/35021
+Listening on /ip4/127.0.0.1/tcp/35021
+Listening on /ip4/IP_ADDRESS/tcp/44693/ws
+Listening on /ip4/127.0.0.1/tcp/44693/ws
+Peer ID: QmT...
+Connected to QmS...
+```
+
+Now, enter any message in the terminal, then it would be disseminated to all peers in the chat using GossipSub.
