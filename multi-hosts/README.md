@@ -27,6 +27,7 @@ Listening on /ip4/BOOTSTRAP_IP/tcp/4001
 Listening on /ip4/127.0.0.1/tcp/4001
 Peer ID: QmS...
 Copy and paste this multiaddrs for joining chat app in another peer: /ip4/BOOTSTRAP_IP/tcp/4001/p2p/QmS...
+```
 
 
 If you have bootstrap peer, lets run common peer to join in the chat:
