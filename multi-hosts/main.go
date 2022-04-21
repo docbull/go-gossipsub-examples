@@ -34,6 +34,8 @@ func (m *mdnsNotifee) HandlePeerFound(pi peer.AddrInfo) {
 }
 
 func main() {
+	// portFlag indicates libp2p peer listening port
+	portFlag := flag.String("port", "4001", "listening port number")
 	// modeFlag indicates running peer's mode
 	modeFlag := flag.String("mode", "", "running peer mode")
 	// bootFlag indicates bootstrap peer's multiaddrs
@@ -55,16 +57,9 @@ func main() {
 
 	security := libp2p.Security(tls.ID, tls.New)
 
-	var port string
+	port := *portFlag
 	mode := *modeFlag
 
-	// Bootstrap peers open 4001 port for listening, and the
-	// other common nodes open their available randomized port
-	if strings.Contains(mode, "bootstrap") {
-		port = "4001"
-	} else {
-		port = "0"
-	}
 	listenAddrs := libp2p.ListenAddrStrings(
 		"/ip4/0.0.0.0/tcp/"+port,
 		"/ip4/0.0.0.0/tcp/"+port+"/ws",
@@ -99,7 +94,7 @@ func main() {
 		panic(err)
 	}
 	defer topic.Close()
-	
+
 	sub, err := topic.Subscribe()
 	if err != nil {
 		panic(err)
@@ -121,7 +116,7 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
-	
+
 		targetInfo, err := peer.AddrInfoFromP2pAddr(targetAddr)
 		if err != nil {
 			panic(err)

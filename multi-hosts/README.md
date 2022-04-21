@@ -4,20 +4,17 @@ This multi-host chat app is based on [go-libp2p example](https://github.com/libp
 
 The simple chat app example above is only working on the same subnet peers like an intranet. That means, the messages cannot go outside and inside neither.
 
-This example lets you experience running chat app that available outside of subnet.
+This example lets you experience running chat app that available communicate with peers outside of subnet.
 
-There are two setup flags for working peers
-- mode
-- bootstrap
-
-mode flag configures peer's role, bootstrap peer or common peer, using `--mode=bootstrap`. Default mode is common peer.
-
-bootstrap flag configures bootstrap peer for joining chat app. You can specify a bootstrap peer using `--bootstrap=/ip4/BOOTSTRAP_IP/tcp/4001/p2p/Qm...`.
+Running peer options:
+- `--port`: Configures peer's listening port number
+- `--mode`: If you want to run your node as a bootstrap node, set this flag as bootstrap; `--mode=bootstrap`
+- `--bootstrap`: Decides connecting bootstrap peer using bootstrap peer's multiaddrs
 
 Run bootstrap peer like this:
 
 ```go
-go run . --mode=bootstrap
+go run . --mode=bootstrap --port=4001
 ```
 
 Output:
