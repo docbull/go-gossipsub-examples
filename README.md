@@ -1,4 +1,4 @@
-# 🌒  🌓  🌔  🌕  🌖  🌗  🌘 
+<img src = "https://user-images.githubusercontent.com/59289320/164983125-171073dd-6152-49cf-b2c6-0899294cca85.png" width="50%">
 
 # Libp2p GossipSub Examples
 
