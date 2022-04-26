@@ -30,7 +30,7 @@ And run another chat app user in a new terminal:
 go run . --nick=watson --room=ChatApp
 ```
 
-Enter any message in the terminal. The message would be sent to other peers using GossipSub. If you want to leave the chatting room, just enter `/quit` command.
+Enter any message in the terminal. The message will be sent to other peers using GossipSub. If you want to leave the chatting room, just enter `/quit` command.
 
 Output A:
 ```console
@@ -143,4 +143,4 @@ Peer ID: QmT...
 Connected to QmS...
 ```
 
-Now, enter any message in the terminal, then it would be disseminated to all peers in the chat using GossipSub.
+Now, enter any message in the terminal, then it will be disseminated to all peers in the chat using GossipSub.
